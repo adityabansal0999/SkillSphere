@@ -1,3 +1,215 @@
 <resources>
     <string name="app_name">SkillSphere</string>
+
+    <!-- Common -->
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="search">Search</string>
+    <string name="loading">Loading…</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+    <string name="ok">OK</string>
+
+    <!-- Auth -->
+    <string name="welcome_back">Welcome Back 👋</string>
+    <string name="sign_in_subtitle">Sign in to continue building</string>
+    <string name="create_account">Create Account</string>
+    <string name="create_account_subtitle">Join SkillSphere community</string>
+    <string name="email">University Email</string>
+    <string name="email_hint">you@university.edu</string>
+    <string name="password">Password</string>
+    <string name="password_hint">••••••••</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="full_name_hint">Arjun Mehta</string>
+    <string name="department">Department</string>
+    <string name="department_hint">CSE</string>
+    <string name="year">Year</string>
+    <string name="year_hint">3rd Year</string>
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="or_continue_with">OR CONTINUE WITH</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="have_account">Have an account?</string>
+    <string name="sign_up_link">Sign Up</string>
+    <string name="login_link">Login</string>
+
+    <!-- Splash -->
+    <string name="tagline">Connect · Collaborate · Create</string>
+    <string name="initializing">Initialising…</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_discover">Discover</string>
+    <string name="nav_workspace">Workspace</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Dashboard -->
+    <string name="good_morning">🌞 Good Morning</string>
+    <string name="good_afternoon">☀️ Good Afternoon</string>
+    <string name="good_evening">🌆 Good Evening</string>
+    <string name="hey_user">Hey, %1$s 👋</string>
+    <string name="search_placeholder">Search skills, students, projects…</string>
+    <string name="create_project">Create Project</string>
+    <string name="discover">Discover</string>
+    <string name="my_active_projects">⚡ My Active Projects</string>
+    <string name="see_all">See all →</string>
+    <string name="join_requests">📬 Join Requests</string>
+    <string name="pending_invites">📨 Pending Invites</string>
+    <string name="no_projects_yet">No projects yet</string>
+    <string name="no_projects_desc">Create your first project or discover existing ones to join</string>
+
+    <!-- Project -->
+    <string name="project_title">Project Title *</string>
+    <string name="project_title_hint">e.g. AI Campus Study Buddy</string>
+    <string name="project_icon">Project Icon</string>
+    <string name="category">Category *</string>
+    <string name="description">Description *</string>
+    <string name="description_hint">Describe your project idea…</string>
+    <string name="skills_required">Skills Required</string>
+    <string name="team_size">Team Size</string>
+    <string name="max_members">Max Members</string>
+    <string name="deadline">Deadline</string>
+    <string name="post_project">Post Project</string>
+    <string name="apply_to_join">Apply to Join Project</string>
+    <string name="request_sent">Request Sent ✓</string>
+    <string name="team_full">Team is Full</string>
+    <string name="open_workspace">Open Workspace →</string>
+    <string name="about">About</string>
+    <string name="project_lead">Project Lead</string>
+    <string name="team">Team</string>
+    <string name="members_count">%1$d/%2$d members</string>
+    <string name="open_slots">%1$d slot(s) open</string>
+    <string name="apply_note">Lead reviews your request · You\'ll get notified of decision</string>
+
+    <!-- Workspace -->
+    <string name="my_workspaces">My Workspaces</string>
+    <string name="all_workspaces">All your active project spaces</string>
+    <string name="chat">💬 Chat</string>
+    <string name="members">👥 Members</string>
+    <string name="tasks">📋 Tasks</string>
+    <string name="info">ℹ️ Info</string>
+    <string name="type_message">Type a message…</string>
+    <string name="send">Send</string>
+    <string name="no_messages">No messages yet</string>
+    <string name="start_conversation">Start the conversation!</string>
+
+    <!-- Members -->
+    <string name="invite_member">+ Invite</string>
+    <string name="team_members">Team Members (%1$d/%2$d)</string>
+    <string name="invite_to_project">Invite to Project</string>
+    <string name="select_project">Select a project:</string>
+    <string name="send_invitation">Send Invitation</string>
+
+    <!-- Tasks -->
+    <string name="add_task">+ Add Task</string>
+    <string name="task_title">Task Title *</string>
+    <string name="task_title_hint">e.g. Implement search feature</string>
+    <string name="task_description">Description</string>
+    <string name="task_description_hint">Describe requirements…</string>
+    <string name="assign_to">Assign To *</string>
+    <string name="due_date">Due Date *</string>
+    <string name="priority">Priority</string>
+    <string name="create_task">Create Task</string>
+    <string name="mark_done">Mark Done</string>
+    <string name="pending">Pending</string>
+    <string name="completed">Completed</string>
+    <string name="no_tasks">No tasks yet</string>
+    <string name="create_first_task">Create your first task to get started</string>
+
+    <!-- Profile -->
+    <string name="my_profile">My Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="skills">Skills</string>
+    <string name="projects">Projects</string>
+    <string name="bio">Bio</string>
+    <string name="academic_info">Academic Info</string>
+    <string name="university">University</string>
+    <string name="my_skills">My Skills</string>
+    <string name="add_skills">+ Add Skills</string>
+    <string name="select_skills">Select Your Skills</string>
+    <string name="skills_selected">%1$d selected</string>
+    <string name="save_skills">Save %1$d Skills</string>
+
+    <!-- Discover -->
+    <string name="discover_title">Discover</string>
+    <string name="projects_tab">Projects</string>
+    <string name="people_tab">People</string>
+    <string name="filters">Filters</string>
+    <string name="sort_by">Sort By</string>
+    <string name="best_match">Best Match</string>
+    <string name="newest_first">Newest First</string>
+    <string name="projects_found">%1$d projects found</string>
+    <string name="people_found">%1$d students found</string>
+    <string name="view_apply">View &amp; Apply</string>
+    <string name="applied">Applied ✓</string>
+    <string name="invite">Invite</string>
+    <string name="invited">Invited ✓</string>
+
+    <!-- Notifications -->
+    <string name="notifications">Notifications</string>
+    <string name="mark_all_read">Mark all read</string>
+    <string name="new_notifications">New</string>
+    <string name="earlier">Earlier</string>
+    <string name="join_request">Join Request</string>
+    <string name="project_invitation">Project Invitation</string>
+    <string name="request_accepted">Request Accepted!</string>
+    <string name="new_message">New Message</string>
+    <string name="task_assigned">Task Assigned</string>
+    <string name="accept">✓ Accept</string>
+    <string name="reject">✗ Reject</string>
+    <string name="decline">Decline</string>
+    <string name="view_project">View Project</string>
+
+    <!-- Settings/Logout -->
+    <string name="logout">Log Out</string>
+    <string name="logout_title">Log Out?</string>
+    <string name="logout_message">You\'ll need to sign in again to access your projects.</string>
+
+    <!-- Status -->
+    <string name="active">Active</string>
+    <string name="forming">Forming</string>
+    <string name="completed_status">Completed</string>
+
+    <!-- Roles -->
+    <string name="lead">Lead</string>
+    <string name="member">Member</string>
+
+    <!-- Errors -->
+    <string name="error_empty_email">Email cannot be empty</string>
+    <string name="error_invalid_email">Invalid email format</string>
+    <string name="error_empty_password">Password cannot be empty</string>
+    <string name="error_password_short">Password must be at least 6 characters</string>
+    <string name="error_passwords_dont_match">Passwords don\'t match</string>
+    <string name="error_empty_name">Name cannot be empty</string>
+    <string name="error_empty_department">Department cannot be empty</string>
+    <string name="error_empty_year">Year cannot be empty</string>
+    <string name="error_select_skills">Please select at least 3 skills</string>
+    <string name="error_network">Network error. Check your connection.</string>
+    <string name="error_auth_failed">Authentication failed</string>
+    <string name="error_project_create">Failed to create project</string>
+    <string name="error_load_projects">Failed to load projects</string>
+
+    <!-- Success Messages -->
+    <string name="success_login">Login successful!</string>
+    <string name="success_signup">Account created successfully!</string>
+    <string name="success_project_created">Project created successfully!</string>
+    <string name="success_request_sent">Request sent to project lead</string>
+    <string name="success_task_created">Task created successfully</string>
+    <string name="success_task_updated">Task updated</string>
+
+    <!-- Categories -->
+    <string name="cat_ai_ml">AI/ML</string>
+    <string name="cat_web">Web Dev</string>
+    <string name="cat_mobile">Mobile</string>
+    <string name="cat_design">Design</string>
+    <string name="cat_iot">IoT</string>
+    <string name="cat_security">Security</string>
+    <string name="cat_cloud">Cloud</string>
+    <string name="cat_data">Data Science</string>
 </resources>
