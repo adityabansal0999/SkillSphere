@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/etProjectTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Project Title"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/etProjectDescription"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:gravity="top"
+        android:hint="Project Description"
+        android:inputType="textMultiLine"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/etCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Category (e.g., Web, Mobile)"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnSaveProject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Post Project" />
+
+</LinearLayout>

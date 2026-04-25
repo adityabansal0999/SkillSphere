@@ -3,6 +3,7 @@ package com.skillsphere.app.models;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class Project {
@@ -11,6 +12,8 @@ public class Project {
     private String icon;
     private String description;
     private List<String> categories;
+
+    private String category;
     private List<String> skillsRequired;
     private String university;
     private String leadId;
@@ -26,6 +29,33 @@ public class Project {
     private long completedAt;
     private long lastMessageAt;
     private long lastActivityAt;
+
+    public Project(String id, String title, String description, String leadId, List<String> skills, String category) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.leadId = leadId;
+        this.leadName = "Anonymous"; // You can update this later
+        this.skillsRequired = skills;
+        this.category = category;
+
+        // Initialize defaults
+        this.status = "forming";
+        this.visibility = "public";
+        this.createdAt = System.currentTimeMillis();
+        this.members = new ArrayList<>();
+        this.members.add(leadId); // Add the creator as the first member
+        this.memberDetails = new HashMap<>();
+        this.memberDetails.put(leadId, new MemberDetail("Owner", "lead", System.currentTimeMillis()));
+        updateOpenSlots();
+    }
+
+    public String getCategory() {
+        return category;
+    }
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
     public static class MemberDetail {
         public String name;
