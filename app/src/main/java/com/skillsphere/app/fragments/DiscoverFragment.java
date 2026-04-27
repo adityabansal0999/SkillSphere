@@ -96,7 +96,7 @@ public class DiscoverFragment extends Fragment {
     }
 
     private void startListening() {
-        // Real-time listener for Projects
+        // Real-time listener for ALL Public Projects
         projectsListener = db.collection(Constants.COLLECTION_PROJECTS)
                 .whereEqualTo("visibility", "public")
                 .addSnapshotListener((querySnapshot, e) -> {
@@ -107,11 +107,11 @@ public class DiscoverFragment extends Fragment {
                     }
                     if (querySnapshot != null) {
                         allProjects.clear();
-                        for (int i = 0; i < querySnapshot.size(); i++) {
-                            Project p = querySnapshot.toObjects(Project.class).get(i);
-                            p.setId(querySnapshot.getDocuments().get(i).getId());
-                            allProjects.add(p);
+                        List<Project> projects = querySnapshot.toObjects(Project.class);
+                        for (int i = 0; i < projects.size(); i++) {
+                            projects.get(i).setId(querySnapshot.getDocuments().get(i).getId());
                         }
+                        allProjects.addAll(projects);
                         if (showingProjects) applySearch(binding.etSearch.getText().toString());
                     }
                 });
@@ -142,8 +142,11 @@ public class DiscoverFragment extends Fragment {
         if (showingProjects) {
             filteredProjects.clear();
             for (Project p : allProjects) {
-                if (q.isEmpty() || (p.getTitle() != null && p.getTitle().toLowerCase().contains(q))
-                        || (p.getCategory() != null && p.getCategory().toLowerCase().contains(q))) {
+                String title = p.getTitle() != null ? p.getTitle().toLowerCase() : "";
+                String category = p.getCategory() != null ? p.getCategory().toLowerCase() : "";
+                String desc = p.getDescription() != null ? p.getDescription().toLowerCase() : "";
+                
+                if (q.isEmpty() || title.contains(q) || category.contains(q) || desc.contains(q)) {
                     filteredProjects.add(p);
                 }
             }
@@ -151,8 +154,10 @@ public class DiscoverFragment extends Fragment {
         } else {
             filteredPeople.clear();
             for (User u : allPeople) {
-                if (q.isEmpty() || (u.getName() != null && u.getName().toLowerCase().contains(q))
-                        || (u.getDepartment() != null && u.getDepartment().toLowerCase().contains(q))) {
+                String name = u.getName() != null ? u.getName().toLowerCase() : "";
+                String dept = u.getDepartment() != null ? u.getDepartment().toLowerCase() : "";
+                
+                if (q.isEmpty() || name.contains(q) || dept.contains(q)) {
                     filteredPeople.add(u);
                 }
             }
