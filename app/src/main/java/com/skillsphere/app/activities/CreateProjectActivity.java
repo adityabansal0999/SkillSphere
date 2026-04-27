@@ -2,12 +2,15 @@ package com.skillsphere.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.skillsphere.app.databinding.ActivityCreateProjectBinding;
 import com.skillsphere.app.models.Project;
@@ -15,7 +18,9 @@ import com.skillsphere.app.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CreateProjectActivity extends AppCompatActivity {
 
@@ -41,9 +46,10 @@ public class CreateProjectActivity extends AppCompatActivity {
         String desc = binding.etProjectDescription.getText().toString().trim();
         String cat = binding.etCategory.getText().toString().trim();
 
-        if (auth.getCurrentUser() == null) return;
-        String userId = auth.getCurrentUser().getUid();
-        String userName = SessionManager.getInstance(this).getUserName();
+        if (auth.getCurrentUser() == null) {
+            Toast.makeText(this, "Please log in to create a project", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         if (title.isEmpty()) { binding.etProjectTitle.setError("Title required"); return; }
         if (desc.isEmpty()) { binding.etProjectDescription.setError("Description required"); return; }
@@ -52,37 +58,42 @@ public class CreateProjectActivity extends AppCompatActivity {
         binding.progressBar.setVisibility(View.VISIBLE);
         binding.btnSaveProject.setEnabled(false);
 
+        String userId = auth.getCurrentUser().getUid();
+        String userName = SessionManager.getInstance(this).getUserName();
+
+        // 1. Generate ID and create Project object
+        DocumentReference projectRef = db.collection("projects").document();
+        String projectId = projectRef.getId();
+
         ArrayList<String> members = new ArrayList<>();
         members.add(userId);
-
-        // Simple parsing of category as a single item list if needed, 
-        // but here we treat 'category' as a String and 'skillsRequired' as a List
         List<String> skills = Arrays.asList(cat.split(",\\s*"));
 
-        Project newProject = new Project("", title, desc, userId, skills, cat);
-        newProject.setLeadName(userName != null ? userName : "Unknown");
+        Project newProject = new Project(projectId, title, desc, userId, skills, cat);
+        newProject.setLeadName(userName != null && !userName.isEmpty() ? userName : "Lead");
         newProject.setMaxMembers(5);
-        newProject.setVisibility("public");
         newProject.setMembers(members);
+        
+        Map<String, Project.MemberDetail> memberDetails = new HashMap<>();
+        memberDetails.put(userId, new Project.MemberDetail(
+                newProject.getLeadName(), "lead", System.currentTimeMillis()
+        ));
+        newProject.setMemberDetails(memberDetails);
 
-        db.collection("projects").add(newProject)
-                .addOnSuccessListener(documentReference -> {
-                    String projectId = documentReference.getId();
-                    documentReference.update("id", projectId)
-                            .addOnCompleteListener(task -> {
-                                binding.progressBar.setVisibility(View.GONE);
-                                Toast.makeText(this, "Project created successfully!", Toast.LENGTH_SHORT).show();
-                                
-                                Intent intent = new Intent(this, ProjectDetailActivity.class);
-                                intent.putExtra("PROJECT_ID", projectId);
-                                startActivity(intent);
-                                finish();
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.btnSaveProject.setEnabled(true);
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        // 2. Start save operation (Firestore handles this locally first)
+        projectRef.set(newProject);
+
+        // 3. Forced Redirection after 5 seconds to prevent hanging on slow networks
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!isFinishing()) {
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(this, "Project Posted Successfully!", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+            }
+        }, 5000);
     }
 }
