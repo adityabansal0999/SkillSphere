@@ -8,35 +8,28 @@ public class User {
     private String name;
     private String email;
     private String photoUrl;
-    private String bio;
-    private String university;
-    private String department;
-    private String year;
-    private List<String> skills;
-    private int projectsCount;
-    private int tasksCompletedCount;
-    private boolean isOnline;
-    private long lastActive;
-    private boolean appearInDiscover;
-    private boolean showOnlineStatus;
-    private boolean pushNotifications;
-    private long createdAt;
+    private String bio = "";
+    private String university = "SkillSphere University";
+    private String department = "";
+    private String year = "";
+    private List<String> skills = new ArrayList<>();
+    private int projectsCount = 0;
+    private int tasksCompletedCount = 0;
+    private boolean isOnline = true;
+    private long lastActive = System.currentTimeMillis();
+    private boolean appearInDiscover = true;
+    private boolean showOnlineStatus = true;
+    private boolean pushNotifications = true;
+    private long createdAt = System.currentTimeMillis();
 
     // Required empty constructor for Firestore
     public User() {
-        this.skills = new ArrayList<>();
     }
 
     public User(String id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.skills = new ArrayList<>();
-        this.isOnline = true;
-        this.appearInDiscover = true;
-        this.showOnlineStatus = true;
-        this.pushNotifications = true;
-        this.createdAt = System.currentTimeMillis();
     }
 
     // Getters
@@ -82,7 +75,7 @@ public class User {
         if (name == null || name.isEmpty()) return "?";
         String[] parts = name.trim().split("\\s+");
         if (parts.length >= 2) {
-            return (parts[0].charAt(0) + "" + parts[1].charAt(0)).toUpperCase();
+            return (parts[0].substring(0, 1) + "" + parts[1].substring(0, 1)).toUpperCase();
         }
         return name.substring(0, Math.min(2, name.length())).toUpperCase();
     }

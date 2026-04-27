@@ -10,7 +10,6 @@ import com.skillsphere.app.fragments.HomeFragment;
 import com.skillsphere.app.fragments.DiscoverFragment;
 import com.skillsphere.app.fragments.WorkspaceFragment;
 import com.skillsphere.app.fragments.ProfileFragment;
-import com.skillsphere.app.utils.MockDataGenerator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,8 +21,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Generate mock data for the showcase
-        MockDataGenerator.generateMockData();
+        // Removed MockDataGenerator.generateMockData() to use real Firebase data
 
         // Load Home by default
         if (savedInstanceState == null) {

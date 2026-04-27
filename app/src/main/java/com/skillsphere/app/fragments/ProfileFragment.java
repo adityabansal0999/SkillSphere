@@ -1,19 +1,26 @@
 package com.skillsphere.app.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.skillsphere.app.R;
 import com.skillsphere.app.activities.EditProfileActivity;
 import com.skillsphere.app.activities.LoginActivity;
@@ -22,16 +29,26 @@ import com.skillsphere.app.models.User;
 import com.skillsphere.app.utils.Constants;
 import com.skillsphere.app.utils.SessionManager;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class ProfileFragment extends Fragment {
 
     private FragmentProfileBinding binding;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
+    private FirebaseStorage storage;
     private SessionManager sessionManager;
     private User currentUser;
+
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    if (imageUri != null) {
+                        uploadProfileImage(imageUri);
+                    }
+                }
+            }
+    );
 
     @Nullable
     @Override
@@ -46,6 +63,7 @@ public class ProfileFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
+        storage = FirebaseStorage.getInstance();
         sessionManager = SessionManager.getInstance(requireContext());
 
         setupListeners();
@@ -60,26 +78,70 @@ public class ProfileFragment extends Fragment {
             startActivity(intent);
         });
 
-        binding.btnChangePassword.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Change Password coming soon", Toast.LENGTH_SHORT).show();
-        });
+        binding.btnChangePhoto.setOnClickListener(v -> showImageOptions());
 
-        // Toggle switches with Firestore updates
-        binding.switchPush.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            updateUserSetting("pushNotifications", isChecked);
-        });
+        binding.switchPush.setOnCheckedChangeListener((buttonView, isChecked) -> updateUserSetting("pushNotifications", isChecked));
+        binding.switchOnline.setOnCheckedChangeListener((buttonView, isChecked) -> updateUserSetting("showOnlineStatus", isChecked));
+        binding.switchDiscover.setOnCheckedChangeListener((buttonView, isChecked) -> updateUserSetting("appearInDiscover", isChecked));
+    }
 
-        binding.switchOnline.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            updateUserSetting("showOnlineStatus", isChecked);
-        });
+    private void showImageOptions() {
+        String[] options = {"Change Photo", "Remove Photo", "Cancel"};
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Profile Photo")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        Intent intent = new Intent(Intent.ACTION_PICK);
+                        intent.setType("image/*");
+                        imagePickerLauncher.launch(intent);
+                    } else if (which == 1) {
+                        removeProfileImage();
+                    }
+                }).show();
+    }
 
-        binding.switchDiscover.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            updateUserSetting("appearInDiscover", isChecked);
-        });
+    private void uploadProfileImage(Uri imageUri) {
+        if (auth.getCurrentUser() == null) return;
+        String userId = auth.getCurrentUser().getUid();
         
-        binding.switchDnd.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Toast.makeText(getContext(), "DND " + (isChecked ? "Enabled" : "Disabled"), Toast.LENGTH_SHORT).show();
-        });
+        binding.photoProgressBar.setVisibility(View.VISIBLE);
+        StorageReference fileRef = storage.getReference().child("profile_photos/" + userId + ".jpg");
+
+        fileRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String url = uri.toString();
+                    db.collection(Constants.COLLECTION_USERS).document(userId)
+                            .update("photoUrl", url)
+                            .addOnSuccessListener(aVoid -> {
+                                if (isAdded()) {
+                                    binding.photoProgressBar.setVisibility(View.GONE);
+                                    Toast.makeText(getContext(), "Photo updated!", Toast.LENGTH_SHORT).show();
+                                    loadUserProfile();
+                                }
+                            });
+                }))
+                .addOnFailureListener(e -> {
+                    if (isAdded()) {
+                        binding.photoProgressBar.setVisibility(View.GONE);
+                        Toast.makeText(getContext(), "Upload failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void removeProfileImage() {
+        if (auth.getCurrentUser() == null) return;
+        String userId = auth.getCurrentUser().getUid();
+
+        binding.photoProgressBar.setVisibility(View.VISIBLE);
+        db.collection(Constants.COLLECTION_USERS).document(userId)
+                .update("photoUrl", null)
+                .addOnSuccessListener(aVoid -> {
+                    if (isAdded()) {
+                        binding.photoProgressBar.setVisibility(View.GONE);
+                        Toast.makeText(getContext(), "Photo removed", Toast.LENGTH_SHORT).show();
+                        loadUserProfile();
+                    }
+                });
     }
 
     private void loadUserProfile() {
@@ -94,18 +156,23 @@ public class ProfileFragment extends Fragment {
                         currentUser.setId(doc.getId());
                         populateUI(currentUser);
                     }
-                })
-                .addOnFailureListener(e -> {
-                    if (isAdded()) Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void populateUI(User user) {
-        binding.tvInitials.setText(user.getInitials());
-        binding.tvName.setText(user.getName() != null ? user.getName() : "");
-        binding.tvEmail.setText(user.getEmail() != null ? user.getEmail() : "");
+        binding.tvName.setText(user.getName());
+        binding.tvEmail.setText(user.getEmail());
 
-        // Set switches state from user data
+        if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
+            binding.tvInitials.setVisibility(View.GONE);
+            binding.ivProfile.setVisibility(View.VISIBLE);
+            Glide.with(this).load(user.getPhotoUrl()).into(binding.ivProfile);
+        } else {
+            binding.ivProfile.setVisibility(View.GONE);
+            binding.tvInitials.setVisibility(View.VISIBLE);
+            binding.tvInitials.setText(user.getInitials());
+        }
+
         binding.switchPush.setChecked(user.isPushNotifications());
         binding.switchOnline.setChecked(user.isShowOnlineStatus());
         binding.switchDiscover.setChecked(user.isAppearInDiscover());
@@ -113,27 +180,21 @@ public class ProfileFragment extends Fragment {
 
     private void updateUserSetting(String key, boolean value) {
         if (auth.getCurrentUser() == null) return;
-        String userId = auth.getCurrentUser().getUid();
-
-        db.collection(Constants.COLLECTION_USERS).document(userId)
-                .update(key, value)
-                .addOnFailureListener(e -> {
-                    if (isAdded()) Toast.makeText(getContext(), "Failed to update setting", Toast.LENGTH_SHORT).show();
-                });
+        db.collection(Constants.COLLECTION_USERS).document(auth.getCurrentUser().getUid()).update(key, value);
     }
 
     private void confirmLogout() {
         new AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.logout_title))
-                .setMessage(getString(R.string.logout_message))
-                .setPositiveButton(getString(R.string.logout), (dialog, which) -> {
+                .setTitle(R.string.logout_title)
+                .setMessage(R.string.logout_message)
+                .setPositiveButton(R.string.logout, (dialog, which) -> {
                     auth.signOut();
                     sessionManager.logout();
                     Intent intent = new Intent(getContext(), LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 })
-                .setNegativeButton(getString(R.string.cancel), null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
