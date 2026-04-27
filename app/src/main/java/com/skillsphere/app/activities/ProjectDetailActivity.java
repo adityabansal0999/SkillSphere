@@ -2,6 +2,8 @@ package com.skillsphere.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Toast;
 
@@ -164,16 +166,24 @@ public class ProjectDetailActivity extends AppCompatActivity {
 
     private void deleteProject() {
         binding.progressBar.setVisibility(View.VISIBLE);
-        db.collection("projects").document(projectId)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Project deleted successfully", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Failed to delete project: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        
+        // Initiate deletion in background
+        db.collection("projects").document(projectId).delete();
+
+        // Use a short delay before redirecting to ensure Firestore has processed locally
+        // and to give user visual feedback that deletion is happening.
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!isFinishing()) {
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(this, "Project deleted successfully", Toast.LENGTH_SHORT).show();
+                
+                // Redirect to Home (MainActivity) and clear backstack to refresh list
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+            }
+        }, 2000);
     }
 
     private void sendJoinRequest() {

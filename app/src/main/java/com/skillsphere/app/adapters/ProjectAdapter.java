@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.firebase.auth.FirebaseAuth;
 import com.skillsphere.app.R;
 import com.skillsphere.app.models.Project;
 import com.skillsphere.app.utils.FirebaseHelper;
@@ -60,16 +61,33 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
                 project.getMembers() != null ? project.getMembers().size() : 0, 
                 project.getMaxMembers() > 0 ? project.getMaxMembers() : 5));
 
-        // Set dynamic match percentage instead of hardcoded 94%
+        // Set dynamic match percentage
         if (holder.tvMatchPercentage != null) {
             holder.tvMatchPercentage.setText(FirebaseHelper.calculateMatchPercentage() + "%");
         }
+
+        // --- Membership Check Logic ---
+        String currentUserId = FirebaseAuth.getInstance().getUid();
+        boolean isAlreadyPart = false;
+
+        if (currentUserId != null) {
+            boolean isLead = currentUserId.equals(project.getLeadId());
+            boolean isMember = project.getMembers() != null && project.getMembers().contains(currentUserId);
+            isAlreadyPart = isLead || isMember;
+        }
+
+        if (isAlreadyPart) {
+            holder.btnAction.setText("Open Workspace");
+            // You can also change the icon if desired: holder.btnAction.setIconResource(R.drawable.ic_workspace);
+        } else {
+            holder.btnAction.setText("View & Apply");
+        }
+        // ------------------------------
 
         // Handle Chips - Filter out IDs and show real skills
         holder.chipGroup.removeAllViews();
         List<String> displaySkills = new ArrayList<>();
         
-        // 1. Try to get real skills
         if (project.getSkillsRequired() != null) {
             for (String s : project.getSkillsRequired()) {
                 String cleaned = clean(s, "");
@@ -77,7 +95,6 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
             }
         }
         
-        // 2. Fallback to categories if skills list is "corrupted" or empty
         if (displaySkills.isEmpty() && project.getCategories() != null) {
             for (String c : project.getCategories()) {
                 String cleaned = clean(c, "");
@@ -86,7 +103,7 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
         }
 
         if (displaySkills.isEmpty()) {
-            displaySkills.add(category); // Last resort fallback
+            displaySkills.add(category);
         }
 
         for (String skillText : displaySkills) {
