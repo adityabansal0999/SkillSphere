@@ -6,8 +6,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.skillsphere.app.R;
 import com.skillsphere.app.models.Project;
+import com.skillsphere.app.utils.FirebaseHelper;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHolder> {
@@ -28,23 +33,94 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
         return new ViewHolder(view);
     }
 
+    private String clean(String s, String fallback) {
+        if (s == null || s.trim().isEmpty() || s.startsWith("[Ljava.lang.String;") || s.contains("@")) {
+            return fallback;
+        }
+        // Filter out Firebase UIDs (usually 28 chars) or Document IDs (20 chars)
+        if (s.length() >= 20 && s.matches("^[a-zA-Z0-9_-]+$")) {
+            return fallback;
+        }
+        return s.trim();
+    }
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Project project = projectList.get(position);
-        holder.title.setText(project.getTitle());
-        holder.category.setText(project.getCategory());
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(project));
+        
+        holder.title.setText(clean(project.getTitle(), "Untitled Project"));
+        holder.description.setText(clean(project.getDescription(), "No description available"));
+        holder.icon.setText(project.getIcon() != null ? project.getIcon() : "🤖");
+        
+        String category = clean(project.getCategory(), "General");
+        String university = clean(project.getUniversity(), "SkillSphere");
+        holder.stack.setText(String.format("%s · %s", category, university));
+        
+        holder.memberCount.setText(String.format("%d/%d", 
+                project.getMembers() != null ? project.getMembers().size() : 0, 
+                project.getMaxMembers() > 0 ? project.getMaxMembers() : 5));
+
+        // Set dynamic match percentage instead of hardcoded 94%
+        if (holder.tvMatchPercentage != null) {
+            holder.tvMatchPercentage.setText(FirebaseHelper.calculateMatchPercentage() + "%");
+        }
+
+        // Handle Chips - Filter out IDs and show real skills
+        holder.chipGroup.removeAllViews();
+        List<String> displaySkills = new ArrayList<>();
+        
+        // 1. Try to get real skills
+        if (project.getSkillsRequired() != null) {
+            for (String s : project.getSkillsRequired()) {
+                String cleaned = clean(s, "");
+                if (!cleaned.isEmpty()) displaySkills.add(cleaned);
+            }
+        }
+        
+        // 2. Fallback to categories if skills list is "corrupted" or empty
+        if (displaySkills.isEmpty() && project.getCategories() != null) {
+            for (String c : project.getCategories()) {
+                String cleaned = clean(c, "");
+                if (!cleaned.isEmpty()) displaySkills.add(cleaned);
+            }
+        }
+
+        if (displaySkills.isEmpty()) {
+            displaySkills.add(category); // Last resort fallback
+        }
+
+        for (String skillText : displaySkills) {
+            Chip chip = new Chip(holder.itemView.getContext());
+            chip.setText(skillText);
+            chip.setTextSize(11f);
+            chip.setClickable(false);
+            chip.setCheckable(false);
+            holder.chipGroup.addView(chip);
+        }
+
+        View.OnClickListener clickListener = v -> listener.onItemClick(project);
+        holder.itemView.setOnClickListener(clickListener);
+        holder.btnAction.setOnClickListener(clickListener);
     }
 
     @Override
     public int getItemCount() { return projectList.size(); }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title, category;
+        TextView title, description, icon, stack, memberCount, tvMatchPercentage;
+        ChipGroup chipGroup;
+        MaterialButton btnAction;
+
         ViewHolder(View view) {
             super(view);
             title = view.findViewById(R.id.tvProjectTitle);
-            category = view.findViewById(R.id.tvProjectCategory);
+            description = view.findViewById(R.id.tvProjectDescription);
+            icon = view.findViewById(R.id.tvProjectIcon);
+            stack = view.findViewById(R.id.tvProjectStack);
+            memberCount = view.findViewById(R.id.tvMemberCount);
+            tvMatchPercentage = view.findViewById(R.id.tvMatchPercentage);
+            chipGroup = view.findViewById(R.id.chipGroupTech);
+            btnAction = view.findViewById(R.id.btnAction);
         }
     }
 }

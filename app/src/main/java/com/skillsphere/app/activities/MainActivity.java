@@ -6,11 +6,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.skillsphere.app.R;
 import com.skillsphere.app.databinding.ActivityMainBinding;
-// Ensure you have these fragment classes created
 import com.skillsphere.app.fragments.HomeFragment;
 import com.skillsphere.app.fragments.DiscoverFragment;
 import com.skillsphere.app.fragments.WorkspaceFragment;
 import com.skillsphere.app.fragments.ProfileFragment;
+import com.skillsphere.app.utils.MockDataGenerator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +21,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Generate mock data for the showcase
+        MockDataGenerator.generateMockData();
 
         // Load Home by default
         if (savedInstanceState == null) {
