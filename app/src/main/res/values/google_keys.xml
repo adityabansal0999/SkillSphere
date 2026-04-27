@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Replace this with your actual Web Client ID from your google-services.json -->
-    <!-- Look for "client_type": 3 in your google-services.json to find the web client id -->
-    <string name="default_web_client_id">your_web_client_id_here.apps.googleusercontent.com</string>
-</resources>
