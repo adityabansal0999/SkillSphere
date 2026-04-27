@@ -89,27 +89,28 @@ public class Constants {
     // Skills
     public static final List<String> SKILLS_LANGUAGES = Arrays.asList(
             "Python", "JavaScript", "Java", "C++", "Kotlin",
-            "Swift", "Dart", "TypeScript", "Go", "Rust"
+            "Swift", "Dart", "TypeScript"
     );
 
     public static final List<String> SKILLS_FRAMEWORKS = Arrays.asList(
             "React Native", "Flutter", "Vue.js", "Django",
-            "FastAPI", "Next.js", "Express", "Spring Boot"
+            "FastAPI", "Next.js"
     );
 
     public static final List<String> SKILLS_TOOLS = Arrays.asList(
-            "Firebase", "AWS", "Docker", "Git", "Linux",
-            "MongoDB", "PostgreSQL", "MySQL", "Redis"
+            "Firebase", "AWS", "Docker", "Git", "Linux"
     );
 
     public static final List<String> SKILLS_AI_ML = Arrays.asList(
-            "TensorFlow", "NLP", "LangChain", "OpenCV",
-            "PyTorch", "Scikit-learn", "Keras"
+            "TensorFlow", "NLP", "LangChain", "OpenCV"
     );
 
     public static final List<String> SKILLS_DESIGN = Arrays.asList(
-            "Figma", "Adobe XD", "UI/UX Research", "Sketch",
-            "Prototyping", "Wireframing"
+            "Figma", "Adobe XD", "UI/UX Research"
+    );
+
+    public static final List<String> SKILLS_DATABASES = Arrays.asList(
+            "MongoDB", "PostgreSQL", "MySQL", "SQLite"
     );
 
     // Project Icons (Emoji)

@@ -9,12 +9,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.skillsphere.R;
-import com.example.skillsphere.models.Message;
+import com.skillsphere.app.R;
+import com.skillsphere.app.models.Message;
+import com.skillsphere.app.utils.FirebaseHelper;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Locale;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -24,19 +23,17 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private final Context context;
     private final List<Message> messages;
     private final String currentUserId;
-    private final SimpleDateFormat timeFormat;
 
     public MessageAdapter(Context context, List<Message> messages, String currentUserId) {
         this.context = context;
         this.messages = messages;
         this.currentUserId = currentUserId;
-        this.timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
     }
 
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
-        if (message.getSenderId().equals(currentUserId)) {
+        if (message.getSenderId() != null && message.getSenderId().equals(currentUserId)) {
             return VIEW_TYPE_SENT;
         }
         return VIEW_TYPE_RECEIVED;
@@ -58,18 +55,16 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messages.get(position);
-        String timeStr = message.getTimestamp() != null
-                ? timeFormat.format(message.getTimestamp())
-                : "";
+        String timeStr = FirebaseHelper.formatTime(message.getTimestamp());
 
         if (holder instanceof SentMessageViewHolder) {
             SentMessageViewHolder sentHolder = (SentMessageViewHolder) holder;
-            sentHolder.tvMessage.setText(message.getText());
+            sentHolder.tvMessage.setText(message.getContent()); // fixed: getContent not getText
             sentHolder.tvTime.setText(timeStr);
         } else if (holder instanceof ReceivedMessageViewHolder) {
             ReceivedMessageViewHolder receivedHolder = (ReceivedMessageViewHolder) holder;
             receivedHolder.tvSenderName.setText(message.getSenderName());
-            receivedHolder.tvMessage.setText(message.getText());
+            receivedHolder.tvMessage.setText(message.getContent()); // fixed: getContent not getText
             receivedHolder.tvTime.setText(timeStr);
         }
     }
@@ -79,10 +74,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return messages.size();
     }
 
-    // ─── Sent ViewHolder ────────────────────────────────────────────────────
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvMessage, tvTime;
-
         SentMessageViewHolder(@NonNull View itemView) {
             super(itemView);
             tvMessage = itemView.findViewById(R.id.tv_message_text);
@@ -90,10 +83,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-    // ─── Received ViewHolder ─────────────────────────────────────────────────
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvSenderName, tvMessage, tvTime;
-
         ReceivedMessageViewHolder(@NonNull View itemView) {
             super(itemView);
             tvSenderName = itemView.findViewById(R.id.tv_sender_name);

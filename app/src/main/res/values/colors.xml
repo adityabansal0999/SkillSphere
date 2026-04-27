@@ -51,4 +51,12 @@
     <!-- Bottom Navigation -->
     <color name="bottom_nav_active">#15A868</color>
     <color name="bottom_nav_inactive">#999999</color>
+
+<!-- Aliases needed by layouts -->
+    <!-- Aliases for layouts -->
+    <color name="primary">#15A868</color>
+    <color name="primary_dark">#0A5C47</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="accent">#1DB975</color>
 </resources>
