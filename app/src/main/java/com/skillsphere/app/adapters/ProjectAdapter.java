@@ -12,7 +12,6 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.auth.FirebaseAuth;
 import com.skillsphere.app.R;
 import com.skillsphere.app.models.Project;
-import com.skillsphere.app.utils.FirebaseHelper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,11 +60,6 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
                 project.getMembers() != null ? project.getMembers().size() : 0, 
                 project.getMaxMembers() > 0 ? project.getMaxMembers() : 5));
 
-        // Set dynamic match percentage
-        if (holder.tvMatchPercentage != null) {
-            holder.tvMatchPercentage.setText(FirebaseHelper.calculateMatchPercentage() + "%");
-        }
-
         // --- Membership Check Logic ---
         String currentUserId = FirebaseAuth.getInstance().getUid();
         boolean isAlreadyPart = false;
@@ -78,7 +72,6 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
 
         if (isAlreadyPart) {
             holder.btnAction.setText("Open Workspace");
-            // You can also change the icon if desired: holder.btnAction.setIconResource(R.drawable.ic_workspace);
         } else {
             holder.btnAction.setText("View & Apply");
         }
@@ -124,7 +117,7 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
     public int getItemCount() { return projectList.size(); }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title, description, icon, stack, memberCount, tvMatchPercentage;
+        TextView title, description, icon, stack, memberCount;
         ChipGroup chipGroup;
         MaterialButton btnAction;
 
@@ -135,7 +128,6 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
             icon = view.findViewById(R.id.tvProjectIcon);
             stack = view.findViewById(R.id.tvProjectStack);
             memberCount = view.findViewById(R.id.tvMemberCount);
-            tvMatchPercentage = view.findViewById(R.id.tvMatchPercentage);
             chipGroup = view.findViewById(R.id.chipGroupTech);
             btnAction = view.findViewById(R.id.btnAction);
         }

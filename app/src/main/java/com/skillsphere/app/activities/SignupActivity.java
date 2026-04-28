@@ -3,6 +3,7 @@ package com.skillsphere.app.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -28,6 +29,7 @@ public class SignupActivity extends AppCompatActivity {
 
     // All available skills
     private final List<String> ALL_SKILLS = buildAllSkills();
+    private final String[] DEPARTMENTS = {"Computer Engineering", "Management"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,7 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         auth = FirebaseHelper.getAuth();
         setupListeners();
+        setupDepartmentDropdown();
     }
 
     private List<String> buildAllSkills() {
@@ -46,6 +49,15 @@ public class SignupActivity extends AppCompatActivity {
         skills.addAll(Constants.SKILLS_AI_ML);
         skills.addAll(Constants.SKILLS_DESIGN);
         return skills;
+    }
+
+    private void setupDepartmentDropdown() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                DEPARTMENTS
+        );
+        binding.atvDepartment.setAdapter(adapter);
     }
 
     private void setupListeners() {
@@ -102,14 +114,14 @@ public class SignupActivity extends AppCompatActivity {
     private void attemptSignup() {
         String name = binding.etName.getText().toString().trim();
         String email = binding.etEmail.getText().toString().trim();
-        String dept = binding.etDepartment.getText().toString().trim();
+        String dept = binding.atvDepartment.getText().toString().trim();
         String year = binding.etYear.getText().toString().trim();
         String password = binding.etPassword.getText().toString().trim();
         String confirm = binding.etConfirmPassword.getText().toString().trim();
 
         if (name.isEmpty()) { binding.etName.setError(getString(R.string.error_empty_name)); return; }
         if (!FirebaseHelper.isValidEmail(email)) { binding.etEmail.setError(getString(R.string.error_invalid_email)); return; }
-        if (dept.isEmpty()) { binding.etDepartment.setError(getString(R.string.error_empty_department)); return; }
+        if (dept.isEmpty()) { binding.atvDepartment.setError(getString(R.string.error_empty_department)); return; }
         if (year.isEmpty()) { binding.etYear.setError(getString(R.string.error_empty_year)); return; }
         if (!FirebaseHelper.isValidPassword(password)) { binding.etPassword.setError(getString(R.string.error_password_short)); return; }
         if (!password.equals(confirm)) { binding.etConfirmPassword.setError(getString(R.string.error_passwords_dont_match)); return; }

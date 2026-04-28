@@ -73,19 +73,35 @@
                     android:inputType="textMultiLine" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <!-- Categories Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Project Categories *"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_categories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Category *"
-                app:placeholderText="e.g. AI/ML, Web Dev, Mobile"
-                android:layout_marginBottom="12dp">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_category"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:singleLine="true" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginBottom="10dp"
+                app:chipSpacing="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_select_categories"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="+ Select Categories"
+                android:textColor="@color/green"
+                android:textSize="14sp"
+                android:textAllCaps="false"
+                android:layout_marginBottom="24dp"
+                app:strokeColor="@color/green"
+                app:cornerRadius="8dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
