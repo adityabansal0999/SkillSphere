@@ -6,67 +6,44 @@
     android:orientation="vertical"
     android:background="@color/background">
 
-    <!-- Header -->
+    <!-- ── HEADER ───────────────────────────────────────────────────── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:background="@drawable/gradient_header">
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/green">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageButton
-                android:id="@+id/btn_back"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_arrow_back"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="@color/white" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Edit Profile"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:layout_marginStart="8dp" />
-
-            <TextView
-                android:id="@+id/btn_logout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LOGOUT"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless" />
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            app:tint="@color/white" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Add Skills"
-            android:textColor="@color/white"
-            android:textSize="28sp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Edit Profile"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginTop="16dp" />
-
-        <TextView
-            android:id="@+id/tv_selection_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tap to select · 0 selected"
-            android:textColor="#CCFFFFFF"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp" />
+            android:textColor="@color/white" />
     </LinearLayout>
+
+    <!-- Loading overlay -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:indeterminate="true"
+        android:progressTint="@color/green_dark"
+        android:visibility="gone" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -79,74 +56,387 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Search Bar -->
+            <!-- ── PHOTO ─────────────────────────────────────────────── -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="28dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/iv_profile_photo"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/bg_avatar_circle"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:civ_border_width="2dp"
+                    app:civ_border_color="@color/green"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/tv_initials_edit"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:gravity="center"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="visible"/>
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_edit_photo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    app:fabSize="mini"
+                    app:srcCompat="@drawable/ic_attach"
+                    app:tint="@color/white"
+                    app:backgroundTint="@color/green" />
+            </FrameLayout>
+
+            <!-- ── SECTION: BASIC INFO ────────────────────────────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BASIC INFORMATION"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_tertiary"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Full Name *"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:imeOptions="actionNext"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Email Address"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:enabled="false"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Username (optional)"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_username"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:imeOptions="actionNext"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Phone Number (optional)"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone"
+                    android:imeOptions="actionNext"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Bio / About Me"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_bio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minLines="3"
+                    android:maxLines="5"
+                    android:inputType="textMultiLine"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- ── SECTION: EDUCATION / WORK ─────────────────────────── -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E8E8E8"
+                android:layout_marginVertical="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EDUCATION / WORK"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_tertiary"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="College / Company Name"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_university"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Department / Branch"
+                    android:layout_marginEnd="8dp">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_department"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionNext"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Year / Experience">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_year"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionNext"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- ── SECTION: LINKS ─────────────────────────────────────── -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E8E8E8"
+                android:layout_marginVertical="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LINKS &amp; LOCATION (OPTIONAL)"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_tertiary"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Location (City, Country)"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_location"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:imeOptions="actionNext"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="LinkedIn / Portfolio URL"
+                android:layout_marginBottom="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_linkedin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textUri"
+                    android:imeOptions="actionDone"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- ── SECTION: SKILLS ────────────────────────────────────── -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E8E8E8"
+                android:layout_marginVertical="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SKILLS"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_tertiary"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/tv_selection_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 skills selected"
+                android:textColor="@color/green"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Search bar -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="24dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#F0F0F0">
-
+                app:strokeColor="#E0E0E0"
+                android:layout_marginBottom="16dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
                     android:gravity="center_vertical">
-
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:src="@drawable/ic_search"
                         app:tint="@color/text_tertiary" />
-
                     <EditText
                         android:id="@+id/et_search_skills"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Search skills..."
+                        android:hint="Search skills…"
                         android:background="@null"
-                        android:textSize="15sp"
-                        android:layout_marginStart="12dp"
+                        android:textSize="14sp"
+                        android:layout_marginStart="8dp"
                         android:singleLine="true" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Skill Sections -->
-            <TextView style="@style/SectionHeader" android:text="LANGUAGES" />
-            <com.google.android.material.chip.ChipGroup android:id="@+id/group_languages" style="@style/SkillChipGroup" />
+            <!-- Languages -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="LANGUAGES" android:textSize="11sp" android:textStyle="bold"
+                android:textColor="@color/text_tertiary" android:layout_marginBottom="8dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/group_languages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="4dp"
+                android:layout_marginBottom="16dp" />
 
-            <TextView style="@style/SectionHeader" android:text="FRAMEWORKS" />
-            <com.google.android.material.chip.ChipGroup android:id="@+id/group_frameworks" style="@style/SkillChipGroup" />
+            <!-- Frameworks -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="FRAMEWORKS" android:textSize="11sp" android:textStyle="bold"
+                android:textColor="@color/text_tertiary" android:layout_marginBottom="8dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/group_frameworks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="4dp"
+                android:layout_marginBottom="16dp" />
 
-            <TextView style="@style/SectionHeader" android:text="CLOUD / TOOLS" />
-            <com.google.android.material.chip.ChipGroup android:id="@+id/group_tools" style="@style/SkillChipGroup" />
+            <!-- Tools / Databases -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="TOOLS &amp; DEVOPS" android:textSize="11sp" android:textStyle="bold"
+                android:textColor="@color/text_tertiary" android:layout_marginBottom="8dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/group_tools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="4dp"
+                android:layout_marginBottom="16dp" />
 
-            <TextView style="@style/SectionHeader" android:text="AI / ML" />
-            <com.google.android.material.chip.ChipGroup android:id="@+id/group_ai_ml" style="@style/SkillChipGroup" />
+            <!-- AI / ML -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="AI / ML" android:textSize="11sp" android:textStyle="bold"
+                android:textColor="@color/text_tertiary" android:layout_marginBottom="8dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/group_ai_ml"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="4dp"
+                android:layout_marginBottom="16dp" />
 
-            <TextView style="@style/SectionHeader" android:text="DESIGN" />
-            <com.google.android.material.chip.ChipGroup android:id="@+id/group_design" style="@style/SkillChipGroup" />
+            <!-- Design -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="DESIGN" android:textSize="11sp" android:textStyle="bold"
+                android:textColor="@color/text_tertiary" android:layout_marginBottom="8dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/group_design"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="4dp"
+                android:layout_marginBottom="16dp" />
 
-            <TextView style="@style/SectionHeader" android:text="DATABASES" />
-            <com.google.android.material.chip.ChipGroup android:id="@+id/group_databases" style="@style/SkillChipGroup" />
+            <!-- Databases -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="DATABASES" android:textSize="11sp" android:textStyle="bold"
+                android:textColor="@color/text_tertiary" android:layout_marginBottom="8dp"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/group_databases"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="4dp"
+                android:layout_marginBottom="24dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <!-- ── SAVE BUTTON ────────────────────────────────────────────────── -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_save_skills"
+        android:id="@+id/btn_save_profile"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_margin="16dp"
-        android:text="Save 0 Skills"
+        android:text="Update Profile"
         android:backgroundTint="@color/green"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:cornerRadius="12dp" />
+        app:cornerRadius="12dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp" />
 
 </LinearLayout>

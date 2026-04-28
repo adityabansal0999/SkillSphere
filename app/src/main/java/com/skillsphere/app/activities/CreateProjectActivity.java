@@ -2,8 +2,6 @@ package com.skillsphere.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.widget.Toast;
 
@@ -110,7 +108,7 @@ public class CreateProjectActivity extends AppCompatActivity {
         ArrayList<String> members = new ArrayList<>();
         members.add(userId);
 
-        // Using first category as the primary 'category' field, and the list for skills/tags
+        // Using first category as the primary 'category' field
         String primaryCategory = selectedCategories.get(0);
 
         Project newProject = new Project(projectId, title, desc, userId, selectedCategories, primaryCategory);
@@ -124,18 +122,20 @@ public class CreateProjectActivity extends AppCompatActivity {
         ));
         newProject.setMemberDetails(memberDetails);
 
-        projectRef.set(newProject);
-
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        projectRef.set(newProject).addOnCompleteListener(task -> {
             if (!isFinishing()) {
                 binding.progressBar.setVisibility(View.GONE);
-                Toast.makeText(this, "Project Posted Successfully!", Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Project Posted Successfully!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    binding.btnSaveProject.setEnabled(true);
+                    Toast.makeText(this, "Error: " + (task.getException() != null ? task.getException().getMessage() : "Unknown error"), Toast.LENGTH_SHORT).show();
+                }
             }
-        }, 5000);
+        });
     }
 }

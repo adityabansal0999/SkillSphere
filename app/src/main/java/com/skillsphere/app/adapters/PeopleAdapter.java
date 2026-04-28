@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.skillsphere.app.R;
 import com.skillsphere.app.models.User;
 
@@ -18,6 +19,7 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
 
     public interface OnPersonClickListener {
         void onPersonClick(User user);
+        void onInviteClick(User user);
     }
 
     private final Context context;
@@ -47,8 +49,10 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
                 ? String.join(" · ", user.getSkills().subList(0, Math.min(3, user.getSkills().size())))
                 : "No skills listed";
         holder.tvSkills.setText(skills);
+        
         if (listener != null) {
             holder.itemView.setOnClickListener(v -> listener.onPersonClick(user));
+            holder.btnInvite.setOnClickListener(v -> listener.onInviteClick(user));
         }
     }
 
@@ -57,12 +61,15 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvInitials, tvName, tvDept, tvSkills;
+        MaterialButton btnInvite;
+        
         ViewHolder(View view) {
             super(view);
             tvInitials = view.findViewById(R.id.tv_person_initials);
             tvName = view.findViewById(R.id.tv_person_name);
             tvDept = view.findViewById(R.id.tv_person_dept);
             tvSkills = view.findViewById(R.id.tv_person_skills);
+            btnInvite = view.findViewById(R.id.btn_invite_person);
         }
     }
 }

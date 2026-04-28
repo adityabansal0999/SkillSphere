@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -23,11 +24,13 @@ import com.skillsphere.app.adapters.PeopleAdapter;
 import com.skillsphere.app.adapters.ProjectAdapter;
 import com.skillsphere.app.databinding.FragmentDiscoverBinding;
 import com.skillsphere.app.models.Project;
+import com.skillsphere.app.models.Request;
 import com.skillsphere.app.models.User;
 import com.skillsphere.app.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DiscoverFragment extends Fragment {
 
@@ -68,7 +71,17 @@ public class DiscoverFragment extends Fragment {
             startActivity(intent);
         });
 
-        peopleAdapter = new PeopleAdapter(requireContext(), filteredPeople, null);
+        peopleAdapter = new PeopleAdapter(requireContext(), filteredPeople, new PeopleAdapter.OnPersonClickListener() {
+            @Override
+            public void onPersonClick(User user) {
+                // Potential feature: view user profile
+            }
+
+            @Override
+            public void onInviteClick(User user) {
+                showInviteDialog(user);
+            }
+        });
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerView.setAdapter(projectAdapter);
@@ -95,16 +108,98 @@ public class DiscoverFragment extends Fragment {
         startListening();
     }
 
+    private void showInviteDialog(User invitedUser) {
+        if (auth.getCurrentUser() == null) return;
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        // Fetch projects where current user is lead
+        db.collection(Constants.COLLECTION_PROJECTS)
+                .whereEqualTo("leadId", currentUserId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Project> myProjects = queryDocumentSnapshots.toObjects(Project.class);
+                    for (int i = 0; i < myProjects.size(); i++) {
+                        myProjects.get(i).setId(queryDocumentSnapshots.getDocuments().get(i).getId());
+                    }
+
+                    if (myProjects.isEmpty()) {
+                        Toast.makeText(getContext(), "You don't have any projects to invite people to.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    String[] projectTitles = new String[myProjects.size()];
+                    for (int i = 0; i < myProjects.size(); i++) {
+                        projectTitles[i] = myProjects.get(i).getTitle();
+                    }
+
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Invite " + invitedUser.getName() + " to...")
+                            .setItems(projectTitles, (dialog, which) -> {
+                                Project selectedProject = myProjects.get(which);
+                                checkAndSendInvite(invitedUser, selectedProject);
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+                });
+    }
+
+    private void checkAndSendInvite(User invitedUser, Project project) {
+        // 1. Check if user is already a member
+        if (project.getMembers() != null && project.getMembers().contains(invitedUser.getId())) {
+            Toast.makeText(getContext(), invitedUser.getName() + " is already in this project.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 2. Check for duplicate pending invite
+        db.collection(Constants.COLLECTION_REQUESTS)
+                .whereEqualTo("projectId", project.getId())
+                .whereEqualTo("toUserId", invitedUser.getId())
+                .whereEqualTo("status", Constants.STATUS_PENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Toast.makeText(getContext(), "An invitation is already pending for this user.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        sendInvite(invitedUser, project);
+                    }
+                });
+    }
+
+    private void sendInvite(User invitedUser, Project project) {
+        String leadId = auth.getCurrentUser().getUid();
+        String leadName = auth.getCurrentUser().getDisplayName(); // fallback if null
+
+        // Get lead name from session if display name is null
+        if (leadName == null || leadName.isEmpty()) {
+            leadName = "Project Lead"; 
+        }
+
+        Request invite = new Request();
+        invite.setType(Constants.REQUEST_TYPE_INVITE);
+        invite.setFromUserId(leadId);
+        invite.setFromUserName(leadName);
+        invite.setToUserId(invitedUser.getId());
+        invite.setProjectId(project.getId());
+        invite.setProjectTitle(project.getTitle());
+        invite.setStatus(Constants.STATUS_PENDING);
+        invite.setCreatedAt(System.currentTimeMillis());
+
+        db.collection(Constants.COLLECTION_REQUESTS)
+                .add(invite)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(getContext(), "Invitation sent to " + invitedUser.getName(), Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to send invitation", Toast.LENGTH_SHORT).show();
+                });
+    }
+
     private void startListening() {
-        // Real-time listener for ALL Public Projects
         projectsListener = db.collection(Constants.COLLECTION_PROJECTS)
                 .whereEqualTo("visibility", "public")
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (!isAdded()) return;
-                    if (e != null) {
-                        Toast.makeText(getContext(), "Failed to load projects", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+                    if (e != null) return;
                     if (querySnapshot != null) {
                         allProjects.clear();
                         List<Project> projects = querySnapshot.toObjects(Project.class);
@@ -116,7 +211,6 @@ public class DiscoverFragment extends Fragment {
                     }
                 });
 
-        // Real-time listener for People
         if (auth.getCurrentUser() == null) return;
         String currentUserId = auth.getCurrentUser().getUid();
 
@@ -144,9 +238,8 @@ public class DiscoverFragment extends Fragment {
             for (Project p : allProjects) {
                 String title = p.getTitle() != null ? p.getTitle().toLowerCase() : "";
                 String category = p.getCategory() != null ? p.getCategory().toLowerCase() : "";
-                String desc = p.getDescription() != null ? p.getDescription().toLowerCase() : "";
                 
-                if (q.isEmpty() || title.contains(q) || category.contains(q) || desc.contains(q)) {
+                if (q.isEmpty() || title.contains(q) || category.contains(q)) {
                     filteredProjects.add(p);
                 }
             }
