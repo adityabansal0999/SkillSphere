@@ -57,7 +57,7 @@
             android:padding="16dp">
 
             <!-- ── PHOTO ─────────────────────────────────────────────── -->
-            <FrameLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -65,38 +65,48 @@
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/iv_profile_photo"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
                     android:src="@drawable/bg_avatar_circle"
                     android:clickable="true"
                     android:focusable="true"
                     app:civ_border_width="2dp"
                     app:civ_border_color="@color/green"
-                    android:visibility="gone"/>
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
                 <TextView
                     android:id="@+id/tv_initials_edit"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
                     android:gravity="center"
-                    android:textSize="32sp"
+                    android:textSize="36sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
                     android:background="@drawable/bg_avatar_circle"
                     android:clickable="true"
                     android:focusable="true"
-                    android:visibility="visible"/>
+                    android:visibility="visible"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fab_edit_photo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
                     app:fabSize="mini"
-                    app:srcCompat="@drawable/ic_attach"
+                    app:srcCompat="@drawable/ic_add"
                     app:tint="@color/white"
-                    app:backgroundTint="@color/green" />
-            </FrameLayout>
+                    app:backgroundTint="@color/green"
+                    app:elevation="4dp"
+                    app:pressedTranslationZ="6dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/tv_initials_edit"
+                    app:layout_constraintEnd_toEndOf="@+id/tv_initials_edit"
+                    android:layout_margin="2dp" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- ── SECTION: BASIC INFO ────────────────────────────────── -->
             <TextView

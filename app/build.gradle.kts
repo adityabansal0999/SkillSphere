@@ -64,6 +64,9 @@ dependencies {
     annotationProcessor(libs.glide.compiler)
     implementation(libs.circle.imageview)
 
+    // Cloudinary
+    implementation(libs.cloudinary.android)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

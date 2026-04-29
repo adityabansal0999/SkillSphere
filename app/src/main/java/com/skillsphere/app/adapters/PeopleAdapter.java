@@ -4,11 +4,13 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.skillsphere.app.R;
 import com.skillsphere.app.models.User;
@@ -42,13 +44,29 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         User user = people.get(position);
-        holder.tvInitials.setText(user.getInitials());
+        
         holder.tvName.setText(user.getName() != null ? user.getName() : "Unknown");
         holder.tvDept.setText(user.getDepartment() != null ? user.getDepartment() : "");
+        
         String skills = user.getSkills() != null && !user.getSkills().isEmpty()
                 ? String.join(" · ", user.getSkills().subList(0, Math.min(3, user.getSkills().size())))
                 : "No skills listed";
         holder.tvSkills.setText(skills);
+
+        // Handle Profile Image or Initials
+        if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
+            holder.ivPhoto.setVisibility(View.VISIBLE);
+            holder.tvInitials.setVisibility(View.GONE);
+            Glide.with(context)
+                    .load(user.getPhotoUrl())
+                    .circleCrop() // Apply circular crop via Glide to avoid CircleImageView crashes
+                    .placeholder(R.drawable.bg_avatar_circle)
+                    .into(holder.ivPhoto);
+        } else {
+            holder.ivPhoto.setVisibility(View.GONE);
+            holder.tvInitials.setVisibility(View.VISIBLE);
+            holder.tvInitials.setText(user.getInitials());
+        }
         
         if (listener != null) {
             holder.itemView.setOnClickListener(v -> listener.onPersonClick(user));
@@ -61,15 +79,17 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.ViewHolder
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvInitials, tvName, tvDept, tvSkills;
+        ImageView ivPhoto;
         MaterialButton btnInvite;
         
         ViewHolder(View view) {
             super(view);
             tvInitials = view.findViewById(R.id.tv_person_initials);
+            ivPhoto = view.findViewById(R.id.iv_person_photo);
             tvName = view.findViewById(R.id.tv_person_name);
             tvDept = view.findViewById(R.id.tv_person_dept);
             tvSkills = view.findViewById(R.id.tv_person_skills);
-            btnInvite = view.findViewById(R.id.btn_invite_person);
+            btnInvite = view.findViewById(R.id.btnInvite);
         }
     }
 }

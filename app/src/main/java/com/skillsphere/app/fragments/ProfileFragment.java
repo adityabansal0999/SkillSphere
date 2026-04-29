@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +18,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.skillsphere.app.R;
 import com.skillsphere.app.activities.EditProfileActivity;
 import com.skillsphere.app.activities.LoginActivity;
@@ -37,10 +39,10 @@ import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
+    private static final String TAG = "ProfileFragment";
     private FragmentProfileBinding binding;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
-    private FirebaseStorage storage;
     private SessionManager sessionManager;
     private User currentUser;
 
@@ -77,7 +79,6 @@ public class ProfileFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
-        storage = FirebaseStorage.getInstance();
         sessionManager = SessionManager.getInstance(requireContext());
 
         setupListeners();
@@ -260,31 +261,50 @@ public class ProfileFragment extends Fragment {
         String userId = auth.getCurrentUser().getUid();
 
         binding.photoProgressBar.setVisibility(View.VISIBLE);
-        StorageReference fileRef = storage.getReference()
-                .child(Constants.STORAGE_PATH_PROFILE + userId + ".jpg");
+        
+        // Using Cloudinary for consistent image management
+        MediaManager.get().upload(imageUri)
+                .unsigned("skillsphere_upload")
+                .option("resource_type", "image")
+                .callback(new UploadCallback() {
+                    @Override
+                    public void onStart(String requestId) {
+                        Log.d(TAG, "Cloudinary upload started");
+                    }
 
-        fileRef.putFile(imageUri).continueWithTask(task -> {
-            if (!task.isSuccessful()) {
-                throw task.getException();
-            }
-            return fileRef.getDownloadUrl();
-        }).addOnSuccessListener(uri -> {
-            String url = uri.toString();
-            Map<String, Object> map = new HashMap<>();
-            map.put("photoUrl", url);
-            db.collection(Constants.COLLECTION_USERS).document(userId)
-                    .set(map, SetOptions.merge())
-                    .addOnSuccessListener(v -> {
+                    @Override
+                    public void onProgress(String requestId, long bytes, long totalBytes) {
+                    }
+
+                    @Override
+                    public void onSuccess(String requestId, Map resultData) {
+                        String url = (String) resultData.get("secure_url");
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("photoUrl", url);
+                        db.collection(Constants.COLLECTION_USERS).document(userId)
+                                .set(map, SetOptions.merge())
+                                .addOnSuccessListener(v -> {
+                                    if (!isAdded()) return;
+                                    binding.photoProgressBar.setVisibility(View.GONE);
+                                    Toast.makeText(getContext(), "Photo updated!", Toast.LENGTH_SHORT).show();
+                                    loadUserProfile();
+                                });
+                    }
+
+                    @Override
+                    public void onError(String requestId, ErrorInfo error) {
                         if (!isAdded()) return;
                         binding.photoProgressBar.setVisibility(View.GONE);
-                        Toast.makeText(getContext(), "Photo updated!", Toast.LENGTH_SHORT).show();
-                        loadUserProfile();
-                    });
-        }).addOnFailureListener(e -> {
-            if (!isAdded()) return;
-            binding.photoProgressBar.setVisibility(View.GONE);
-            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        });
+                        Log.e(TAG, "Cloudinary Error: " + error.getDescription());
+                        Toast.makeText(getContext(), "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onReschedule(String requestId, ErrorInfo error) {
+                        if (!isAdded()) return;
+                        binding.photoProgressBar.setVisibility(View.GONE);
+                    }
+                }).dispatch();
     }
 
     private void removeProfileImage() {
