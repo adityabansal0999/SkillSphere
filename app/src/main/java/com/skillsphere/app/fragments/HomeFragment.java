@@ -13,6 +13,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.skillsphere.app.activities.NotificationsActivity;
@@ -27,7 +29,9 @@ import com.skillsphere.app.utils.FirebaseHelper;
 import com.skillsphere.app.utils.SessionManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HomeFragment extends Fragment implements RequestAdapter.OnRequestActionListener {
 
@@ -59,12 +63,10 @@ public class HomeFragment extends Fragment implements RequestAdapter.OnRequestAc
         myProjects = new ArrayList<>();
         pendingRequests = new ArrayList<>();
 
-        // Set greeting
         binding.tvGreeting.setText(FirebaseHelper.getGreeting());
         String userName = SessionManager.getInstance(requireContext()).getUserName();
         binding.tvUserName.setText(userName != null && !userName.isEmpty() ? "Hey, " + userName + " 👋" : "Hey there 👋");
 
-        // My Projects RecyclerView - only user's own projects
         projectAdapter = new ProjectAdapter(myProjects, project -> {
             Intent intent = new Intent(getContext(), ProjectDetailActivity.class);
             intent.putExtra("PROJECT_ID", project.getId());
@@ -73,12 +75,10 @@ public class HomeFragment extends Fragment implements RequestAdapter.OnRequestAc
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerView.setAdapter(projectAdapter);
 
-        // Requests RecyclerView
         requestAdapter = new RequestAdapter(requireContext(), pendingRequests, this);
         binding.rvRequests.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvRequests.setAdapter(requestAdapter);
 
-        // Notifications bell
         binding.btnNotifications.setOnClickListener(v -> {
             startActivity(new Intent(getContext(), NotificationsActivity.class));
         });
@@ -92,16 +92,12 @@ public class HomeFragment extends Fragment implements RequestAdapter.OnRequestAc
 
         binding.progressBar.setVisibility(View.VISIBLE);
 
-        // Real-time listener for My Projects
         projectsListener = db.collection(Constants.COLLECTION_PROJECTS)
                 .whereArrayContains("members", userId)
                 .addSnapshotListener((queryDocumentSnapshots, e) -> {
                     if (!isAdded()) return;
                     binding.progressBar.setVisibility(View.GONE);
-                    if (e != null) {
-                        Toast.makeText(getContext(), "Error loading projects", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+                    if (e != null) return;
                     if (queryDocumentSnapshots != null) {
                         myProjects.clear();
                         List<Project> projects = queryDocumentSnapshots.toObjects(Project.class);
@@ -114,7 +110,6 @@ public class HomeFragment extends Fragment implements RequestAdapter.OnRequestAc
                     }
                 });
 
-        // Real-time listener for Pending Requests
         requestsListener = db.collection(Constants.COLLECTION_REQUESTS)
                 .whereEqualTo("toUserId", userId)
                 .whereEqualTo("status", Constants.STATUS_PENDING)
@@ -136,24 +131,69 @@ public class HomeFragment extends Fragment implements RequestAdapter.OnRequestAc
 
     @Override
     public void onAccept(Request request) {
-        db.collection(Constants.COLLECTION_REQUESTS).document(request.getId())
-                .update("status", Constants.STATUS_ACCEPTED)
-                .addOnSuccessListener(aVoid -> {
-                    // Add user to project
-                    com.google.firebase.firestore.FieldValue union =
-                            com.google.firebase.firestore.FieldValue.arrayUnion(request.getFromUserId());
-                    db.collection(Constants.COLLECTION_PROJECTS).document(request.getProjectId())
-                            .update("members", union);
-                    Toast.makeText(getContext(), "Request accepted!", Toast.LENGTH_SHORT).show();
-                });
+        if (auth.getCurrentUser() == null) return;
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        // 1. Identify who is joining
+        String tempUserId;
+        String tempUserName;
+
+        if (Constants.REQUEST_TYPE_INVITE.equals(request.getType())) {
+            // I was invited -> I am joining
+            tempUserId = currentUserId;
+            tempUserName = SessionManager.getInstance(requireContext()).getUserName();
+        } else {
+            // I am the lead, accepting a join request -> the sender is joining
+            tempUserId = request.getFromUserId();
+            tempUserName = request.getFromUserName();
+        }
+
+        final String joiningUserId = tempUserId;
+        final String joiningUserName = (tempUserName == null || tempUserName.isEmpty()) ? "New Member" : tempUserName;
+
+        // 2. Use a Transaction to update both Project and Request atomically
+        db.runTransaction(transaction -> {
+            DocumentReference projectRef = db.collection(Constants.COLLECTION_PROJECTS).document(request.getProjectId());
+            DocumentReference requestRef = db.collection(Constants.COLLECTION_REQUESTS).document(request.getId());
+
+            // Prepare member details
+            Map<String, Object> details = new HashMap<>();
+            details.put("name", joiningUserName);
+            details.put("role", "member");
+            details.put("joinedAt", System.currentTimeMillis());
+
+            // Update Project: members array + memberDetails map
+            transaction.update(projectRef, 
+                "members", FieldValue.arrayUnion(joiningUserId),
+                "memberDetails." + joiningUserId, details
+            );
+
+            // Update Request status
+            transaction.update(requestRef, 
+                "status", Constants.STATUS_ACCEPTED, 
+                "respondedAt", System.currentTimeMillis()
+            );
+
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Accepted successfully!", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(e -> {
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
     public void onReject(Request request) {
         db.collection(Constants.COLLECTION_REQUESTS).document(request.getId())
-                .update("status", Constants.STATUS_REJECTED)
+                .update("status", Constants.STATUS_REJECTED, "respondedAt", System.currentTimeMillis())
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Request rejected", Toast.LENGTH_SHORT).show();
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Request rejected", Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 
